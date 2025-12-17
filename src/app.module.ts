@@ -6,6 +6,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { FirebaseModule } from "./modules/auth/firebase.module";
 import { UserModule } from "./modules/user/user.module";
 import { AreaOfInterestModule } from "./modules/area-of-interest/area-of-interest.module";
+import { AlertsModule } from "./modules/alerts/alerts.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AreaOfInterestModule } from "./modules/area-of-interest/area-of-interes
     AuthModule,
     UserModule,
     AreaOfInterestModule,
+    AlertsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
