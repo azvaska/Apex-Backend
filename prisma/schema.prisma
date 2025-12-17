@@ -1,0 +1,214 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {a
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat    = "cjs"
+
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  firebaseUid  String   @unique
+  email        String   @unique
+  name         String
+  surname      String
+  profileImage String?  // URL or storage key
+
+  // Relations
+  alertPreferences   AlertPreference[]
+  reports            Report[]
+  comments           Comment[]
+  alertEvents        AlertEvent[]
+  conversationCtxs   ConversationContext[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AreaOfInterest {
+  id       String @id @default(uuid()) @db.Uuid
+  name     String
+  geometry Json   // GeoJSON (or consider PostGIS in a later iteration)
+
+  // Relations
+  alertPreferences        AlertPreference[]
+  environmentalSamples    EnvironmentalSample[]
+  environmentalAggregates EnvironmentalAggregate[]
+  reports                 Report[]
+  alertEvents             AlertEvent[]
+  conversationCtxs        ConversationContext[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AlertPreference {
+  id                 String  @id @default(uuid()) @db.Uuid
+  userId             String  @db.Uuid
+  areaId             String  @db.Uuid
+  avalancheThreshold Float
+  flood              Boolean
+  storm              Boolean
+  landslide          Boolean
+  enabled            Boolean @default(true)
+
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  area AreaOfInterest @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, areaId])
+  @@index([areaId])
+}
+
+model EnvironmentalSample {
+  id               String   @id @default(uuid()) @db.Uuid
+  areaId           String   @db.Uuid
+  timestamp        DateTime
+  airTemperatureC  Float
+  relativeHumidity Float
+  windSpeedMs      Float
+  windDirectionDeg Int
+  precipitationMm  Float
+  rawData          Json?    // normalized or vendor-specific payload
+  source           String   // e.g., ARPAV | Meteomont | ProtezioneCivile
+
+  area AreaOfInterest @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([areaId, timestamp])
+  @@unique([areaId, timestamp, source])
+}
+
+model EnvironmentalAggregate {
+  id            String   @id @default(uuid()) @db.Uuid
+  areaId        String   @db.Uuid
+  validFrom     DateTime
+  validTo       DateTime
+  avalancheLevel Int
+  floodLevel     Int
+  stormLevel     Int
+
+  area AreaOfInterest @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([areaId, validFrom, validTo])
+  @@unique([areaId, validFrom, validTo])
+}
+
+model AlertEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  areaId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  riskIndex Int
+  message   String
+
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  area AreaOfInterest @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([areaId, createdAt])
+}
+
+model Report {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  areaId    String   @db.Uuid
+  title     String
+  text      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  area AreaOfInterest @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  comments    Comment[]
+  attachments AttachmentMetadata[]
+
+  @@index([areaId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Comment {
+  id        String   @id @default(uuid()) @db.Uuid
+  reportId  String   @db.Uuid
+  userId    String   @db.Uuid
+  text      String
+  createdAt DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model AttachmentMetadata {
+  id        String   @id @default(uuid()) @db.Uuid
+  reportId  String   @db.Uuid
+
+  // Extra fields typically required in practice
+  url       String
+  mimeType  String?
+  sizeBytes Int?
+  createdAt DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model ConversationContext {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  areaId         String   @db.Uuid
+  conversationId String   @unique
+
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  area AreaOfInterest @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  answers AIAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+  @@index([areaId, updatedAt])
+}
+
+model AIAnswer {
+  id          String   @id @default(uuid()) @db.Uuid
+  contextId   String   @db.Uuid
+  text        String
+  generatedAt DateTime @default(now())
+
+  context ConversationContext @relation(fields: [contextId], references: [id], onDelete: Cascade)
+
+  @@index([contextId, generatedAt])
+}
+
+model RawMeteoPayload {
+  id         String   @id @default(uuid()) @db.Uuid
+  source     String
+  receivedAt DateTime
+  rawJson    Json
+
+  createdAt DateTime @default(now())
+
+  @@index([source, receivedAt])
+}
