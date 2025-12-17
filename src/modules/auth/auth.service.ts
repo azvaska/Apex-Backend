@@ -48,14 +48,10 @@ export class AuthService {
         },
       });
 
-      // Optional: return a custom token for immediate login via signInWithCustomToken
-      const customToken = await this.firebaseApp.auth.createCustomToken(
-        fbUser.uid,
-      );
+
 
       return {
         user: dbUser,
-        customToken,
       };
     } catch (e: any) {
       // Best-effort rollback if DB write fails after Firebase user creation
@@ -81,3 +77,8 @@ export class AuthService {
     }
   }
 }
+
+
+// curl -X POST "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBMl2emp1zaHJQbc7KPMuAX8Qr75-3cZFU" \
+//   -H "Content-Type: application/json" \
+//   -d '{"email":"a@a5.com","password":"123456","returnSecureToken":true}'
