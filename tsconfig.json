@@ -17,9 +17,11 @@
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "typescript-eslint/no-unsafe-call": false,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "inlineSources": true
   }
 }
