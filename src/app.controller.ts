@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Controller, Get, UseGuards } from "@nestjs/common";
 import { AppService } from "./app.service";
 // import { FirebaseGuard } from "@alpha018/nestjs-firebase-auth";

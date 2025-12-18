@@ -27,7 +27,8 @@ export class AlertResponseDto {
 
   @ApiProperty({
     description: "Alert message describing the risk",
-    example: "High avalanche risk detected in Dolomites Region. Risk level: 4/5",
+    example:
+      "High avalanche risk detected in Dolomites Region. Risk level: 4/5",
   })
   message: string;
 

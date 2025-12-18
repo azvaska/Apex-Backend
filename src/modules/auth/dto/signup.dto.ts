@@ -47,7 +47,8 @@ export class SignUpDto {
   surname: string;
 
   @ApiPropertyOptional({
-    description: "Base64 encoded profile image (with or without data URI prefix)",
+    description:
+      "Base64 encoded profile image (with or without data URI prefix)",
     example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",
   })
   @IsOptional()

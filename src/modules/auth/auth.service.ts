@@ -50,8 +50,6 @@ export class AuthService {
         },
       });
 
-
-
       return {
         user: dbUser,
       };
@@ -154,7 +152,6 @@ export class AuthService {
     }
   }
 }
-
 
 // curl -X POST "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBMl2emp1zaHJQbc7KPMuAX8Qr75-3cZFU" \
 //   -H "Content-Type: application/json" \

@@ -171,7 +171,9 @@ export class AlertsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: "Delete an alert preference" })
   @ApiParam({ name: "id", description: "Alert preference UUID" })
-  @ApiNoContentResponse({ description: "Alert preference deleted successfully" })
+  @ApiNoContentResponse({
+    description: "Alert preference deleted successfully",
+  })
   @ApiNotFoundResponse({ description: "Preference not found" })
   @ApiUnauthorizedResponse({ description: "Unauthorized" })
   async deletePreference(
