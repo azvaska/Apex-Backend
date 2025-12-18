@@ -39,6 +39,23 @@ export class UserResponseDto {
   profileImage!: string | null;
 
   @ApiProperty({
+    description:
+      "Firebase Cloud Messaging (FCM) device token for push notifications",
+    example: "dGVzdC1mY20tdG9rZW4tZXhhbXBsZS0xMjM0NTY3ODkw...",
+    nullable: true,
+    required: false,
+  })
+  fcmToken?: string | null;
+
+  @ApiProperty({
+    description: "Timestamp of last FCM token update",
+    example: "2024-01-15T10:30:00.000Z",
+    nullable: true,
+    required: false,
+  })
+  fcmTokenUpdatedAt?: Date | null;
+
+  @ApiProperty({
     description: "Account creation timestamp",
     example: "2024-01-15T10:30:00.000Z",
   })

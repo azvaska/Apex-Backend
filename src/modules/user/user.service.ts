@@ -18,6 +18,8 @@ export class UserService {
         name: true,
         surname: true,
         profileImage: true,
+        fcmToken: true,
+        fcmTokenUpdatedAt: true,
         createdAt: true,
         updatedAt: true,
       },

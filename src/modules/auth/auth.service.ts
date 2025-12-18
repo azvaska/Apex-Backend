@@ -2,10 +2,12 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from "@nestjs/common";
 import { FirebaseProvider } from "@alpha018/nestjs-firebase-auth";
 import { PrismaService } from "../../common/prisma.service";
 import { SignUpDto } from "./dto/signup.dto";
+import { UpdateFcmTokenDto } from "./dto/update-fcm-token.dto";
 
 @Injectable()
 export class AuthService {
@@ -74,6 +76,81 @@ export class AuthService {
       console.log(e);
 
       throw new InternalServerErrorException("Signup failed");
+    }
+  }
+
+  /**
+   * Update the FCM token for a user
+   * @param firebaseUid - The Firebase UID of the user
+   * @param dto - The DTO containing the new FCM token
+   * @returns The updated user data
+   */
+  async updateFcmToken(firebaseUid: string, dto: UpdateFcmTokenDto) {
+    try {
+      const user = await this.prisma.user.update({
+        where: { firebaseUid },
+        data: {
+          fcmToken: dto.fcmToken,
+          fcmTokenUpdatedAt: new Date(),
+        },
+        select: {
+          id: true,
+          firebaseUid: true,
+          email: true,
+          name: true,
+          surname: true,
+          profileImage: true,
+          fcmToken: true,
+          fcmTokenUpdatedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      return { user };
+    } catch (e: any) {
+      if (e?.code === "P2025") {
+        throw new NotFoundException("User not found");
+      }
+      console.log(e);
+      throw new InternalServerErrorException("Failed to update FCM token");
+    }
+  }
+
+  /**
+   * Clear the FCM token for a user (e.g., on logout)
+   * @param firebaseUid - The Firebase UID of the user
+   * @returns The updated user data
+   */
+  async clearFcmToken(firebaseUid: string) {
+    try {
+      const user = await this.prisma.user.update({
+        where: { firebaseUid },
+        data: {
+          fcmToken: null,
+          fcmTokenUpdatedAt: new Date(),
+        },
+        select: {
+          id: true,
+          firebaseUid: true,
+          email: true,
+          name: true,
+          surname: true,
+          profileImage: true,
+          fcmToken: true,
+          fcmTokenUpdatedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      return { user };
+    } catch (e: any) {
+      if (e?.code === "P2025") {
+        throw new NotFoundException("User not found");
+      }
+      console.log(e);
+      throw new InternalServerErrorException("Failed to clear FCM token");
     }
   }
 }

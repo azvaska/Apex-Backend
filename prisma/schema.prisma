@@ -24,6 +24,10 @@ model User {
   surname      String
   profileImage String?  // URL or storage key
 
+  // FCM Push Notification Token
+  fcmToken          String?   // Firebase Cloud Messaging token
+  fcmTokenUpdatedAt DateTime? // Timestamp of last FCM token update
+
   // Relations
   alertPreferences   AlertPreference[]
   reports            Report[]
