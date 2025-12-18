@@ -30,6 +30,9 @@ import {
   UpdateReportDto,
   ReportResponseDto,
   ReportQueryDto,
+  CreateCommentDto,
+  CommentQueryDto,
+  CommentResponseDto,
 } from "./dto";
 import { UserService } from "../user/user.service";
 
@@ -151,5 +154,87 @@ export class ReportController {
   })
   async remove(@Param("id", ParseUUIDPipe) id: string): Promise<void> {
     return this.reportService.remove(id);
+  }
+
+  // ==================== Comment Endpoints ====================
+
+  @Post(":reportId/comments")
+  @ApiOperation({ summary: "Create a comment on a report" })
+  @ApiCreatedResponse({
+    description: "Comment created successfully",
+    type: CommentResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Invalid or missing authentication token",
+  })
+  @ApiBadRequestResponse({
+    description: "Invalid input data",
+  })
+  @ApiNotFoundResponse({
+    description: "Report not found",
+  })
+  async createComment(
+    @Param("reportId", ParseUUIDPipe) reportId: string,
+    @FirebaseUser() firebaseUser: { uid: string },
+    @Body() createDto: CreateCommentDto,
+  ): Promise<CommentResponseDto> {
+    const user = await this.userService.getCurrentUser(firebaseUser.uid);
+    return this.reportService.createComment(reportId, user.id, createDto);
+  }
+
+  @Get(":reportId/comments")
+  @ApiOperation({ summary: "Get all comments for a report" })
+  @ApiOkResponse({
+    description: "List of comments retrieved successfully",
+  })
+  @ApiUnauthorizedResponse({
+    description: "Invalid or missing authentication token",
+  })
+  @ApiNotFoundResponse({
+    description: "Report not found",
+  })
+  async findComments(
+    @Param("reportId", ParseUUIDPipe) reportId: string,
+    @Query() query: CommentQueryDto,
+  ): Promise<PaginatedResponse<CommentResponseDto>> {
+    return this.reportService.findCommentsByReport(reportId, query);
+  }
+
+  @Get(":reportId/comments/:commentId")
+  @ApiOperation({ summary: "Get a specific comment" })
+  @ApiOkResponse({
+    description: "Comment retrieved successfully",
+    type: CommentResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: "Report or comment not found",
+  })
+  @ApiUnauthorizedResponse({
+    description: "Invalid or missing authentication token",
+  })
+  async findOneComment(
+    @Param("reportId", ParseUUIDPipe) reportId: string,
+    @Param("commentId", ParseUUIDPipe) commentId: string,
+  ): Promise<CommentResponseDto> {
+    return this.reportService.findOneComment(reportId, commentId);
+  }
+
+  @Delete(":reportId/comments/:commentId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Delete a comment" })
+  @ApiNoContentResponse({
+    description: "Comment deleted successfully",
+  })
+  @ApiNotFoundResponse({
+    description: "Report or comment not found",
+  })
+  @ApiUnauthorizedResponse({
+    description: "Invalid or missing authentication token",
+  })
+  async removeComment(
+    @Param("reportId", ParseUUIDPipe) reportId: string,
+    @Param("commentId", ParseUUIDPipe) commentId: string,
+  ): Promise<void> {
+    return this.reportService.removeComment(reportId, commentId);
   }
 }

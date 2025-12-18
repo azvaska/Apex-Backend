@@ -9,6 +9,9 @@ import {
   UpdateReportDto,
   ReportResponseDto,
   ReportQueryDto,
+  CreateCommentDto,
+  CommentQueryDto,
+  CommentResponseDto,
 } from "./dto";
 
 export interface PaginatedResponse<T> {
@@ -262,5 +265,106 @@ export class ReportService {
     query: ReportQueryDto,
   ): Promise<PaginatedResponse<ReportResponseDto>> {
     return this.findAll({ ...query, areaId });
+  }
+
+  // ==================== Comment Methods ====================
+
+  private readonly commentInclude = {
+    user: {
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        surname: true,
+        profileImage: true,
+      },
+    },
+  };
+
+  async createComment(
+    reportId: string,
+    userId: string,
+    createDto: CreateCommentDto,
+  ): Promise<CommentResponseDto> {
+    // Verify the report exists
+    await this.findOne(reportId);
+
+    const comment = await this.prisma.comment.create({
+      data: {
+        text: createDto.text,
+        reportId,
+        userId,
+      },
+      include: this.commentInclude,
+    });
+
+    return comment as unknown as CommentResponseDto;
+  }
+
+  async findCommentsByReport(
+    reportId: string,
+    query: CommentQueryDto,
+  ): Promise<PaginatedResponse<CommentResponseDto>> {
+    // Verify the report exists
+    await this.findOne(reportId);
+
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.comment.findMany({
+        where: { reportId },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: this.commentInclude,
+      }),
+      this.prisma.comment.count({ where: { reportId } }),
+    ]);
+
+    return {
+      data: data as unknown as CommentResponseDto[],
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async findOneComment(
+    reportId: string,
+    commentId: string,
+  ): Promise<CommentResponseDto> {
+    // Verify the report exists
+    await this.findOne(reportId);
+
+    const comment = await this.prisma.comment.findFirst({
+      where: {
+        id: commentId,
+        reportId,
+      },
+      include: this.commentInclude,
+    });
+
+    if (!comment) {
+      throw new NotFoundException(
+        `Comment with ID "${commentId}" not found in report "${reportId}"`,
+      );
+    }
+
+    return comment as unknown as CommentResponseDto;
+  }
+
+  async removeComment(reportId: string, commentId: string): Promise<void> {
+    // Verify the comment exists in this report
+    await this.findOneComment(reportId, commentId);
+
+    await this.prisma.comment.delete({
+      where: { id: commentId },
+    });
   }
 }
