@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString, MaxLength, Matches } from "class-validator";
+import {ApiPropertyOptional} from "@nestjs/swagger";
+import {IsOptional, IsString, MaxLength, Matches} from "class-validator";
 
 export class UpdateUserDto {
   @ApiPropertyOptional({
@@ -23,15 +23,13 @@ export class UpdateUserDto {
   surname?: string;
 
   @ApiPropertyOptional({
-    description:
-      "Base64 encoded profile image (with data URI prefix)",
+    description: "Base64 encoded profile image (with data URI prefix)",
     example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...",
   })
   @IsOptional()
   @IsString()
   @Matches(/^data:image\/(jpeg|jpg|png|gif|webp);base64,/, {
-    message:
-      "Image must be a valid base64 data URL with format: data:image/(jpeg|jpg|png|gif|webp);base64,...",
+    message: "Image must be a valid base64 data URL with format: data:image/(jpeg|jpg|png|gif|webp);base64,...",
   })
   profileImage?: string;
 }
