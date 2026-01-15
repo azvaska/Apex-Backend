@@ -9,6 +9,7 @@ import { AreaOfInterestModule } from "./modules/area-of-interest/area-of-interes
 import { AlertsModule } from "./modules/alerts/alerts.module";
 import { ReportModule } from "./modules/report/report.module";
 import { AiModule } from "./modules/ai/ai.module";
+import { EnvironmentalModule } from "./modules/environmental/environmental.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AiModule } from "./modules/ai/ai.module";
     AlertsModule,
     ReportModule,
     AiModule,
+    EnvironmentalModule,
   ],
   controllers: [AppController],
   providers: [AppService],
